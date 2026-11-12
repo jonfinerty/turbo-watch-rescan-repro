@@ -13,15 +13,15 @@ for t in $(seq "$trials"); do
   pnpm exec turbo watch build -vv >"$log" 2>&1 &
   turbo=$!
   sleep 8
-  builds_before=$(grep -c 'Application A is built!' "$log" || true)
+  builds_before=$(grep -c '^app-a:build: Application A is built!' "$log" || true)
 
   node scripts/burst.mjs
   sleep 20
 
   rescans=$(grep -c 'requires a full rescan' "$log" || true)
-  reruns=$(( $(grep -c 'Application A is built!' "$log" || true) - builds_before ))
+  reruns=$(( $(grep -c '^app-a:build: Application A is built!' "$log" || true) - builds_before ))
   [ "$reruns" -gt 0 ] && hits=$((hits + 1))
-  echo "trial $t: rescan errors=$rescans, app-a rebuilds after burst=$reruns"
+  echo "trial $t: rescan error lines=$rescans, app-a rebuilds after burst=$reruns"
 
   pkill -P "$turbo" || true
   kill "$turbo" 2>/dev/null || true
